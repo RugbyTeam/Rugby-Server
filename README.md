@@ -2,6 +2,7 @@
 Web server for Rugby
 
 Instructions:
+
 Download ngrok at https://ngrok.com/download
 
 ```
@@ -22,6 +23,8 @@ python server.py
 ```
 
 Go to Rugby-Playbooks at https://github.com/RugbyTeam/Rugby-Playbooks
+
 Go to settings -> webhooks
+
 Add a new webhook with your ngrok URL above.
 
