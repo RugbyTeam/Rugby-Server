@@ -7,6 +7,8 @@ def github_payload():
     print "Printing events: "
     payload = request.get_json()
     events = payload['hook']['events']
+    url = payload['repository']['clone_url']
+    print url
     if 'push' in events:
         return "Received push"
     return "Received something..."
