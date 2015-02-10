@@ -19,6 +19,17 @@ Download pip at https://pip.pypa.io/en/latest/installing.html
 
 ```
 pip install Flask
+```
+
+Download Rugby python module (in the same directory as server.py)
+
+```
+git clone https://github.com/RugbyTeam/Rugby.git
+```
+
+Start the server
+
+```
 python server.py
 ```
 
@@ -27,4 +38,3 @@ Go to Rugby-Playbooks at https://github.com/RugbyTeam/Rugby-Playbooks
 Go to settings -> webhooks
 
 Add a new webhook with your ngrok URL above.
-
