@@ -1,17 +1,20 @@
 from flask import Flask, request, json
+from Rugby import Rugby
 
+rugby = Rugby()
 app = Flask(__name__)
 
 @app.route('/payload', methods=['POST'])
 def github_payload():
-    print "Printing events: "
     payload = request.get_json()
-    events = payload['hook']['events']
     url = payload['repository']['clone_url']
     print url
-    if 'push' in events:
+
+    if request.headers.get('X-Github-Event') == 'push':
         return "Received push"
     return "Received something..."
 
 if __name__ == "__main__":
+    rugby.init("/Users/yuki/TEST")
+    rugby.up()
     app.run(debug=True)
