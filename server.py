@@ -21,16 +21,17 @@ def github_payload():
     commit_id = payload['commits'][-1]['id']
     clone_url = payload['repository']['clone_url']
     config_url = base_url + payload['repository']['full_name'] + yml
-   
+    config_file = "/tmp/"+commit_id
     # We grab the .rugby.yml file from the repo and pass it to Rugby object
     try:
-        yml_file = urllib.urlopen(config_url)
+        yml_file = urllib.URLopener()
+        yml_file.retrieve(config_url, config_file)
     except URLError:
         print "Rugby-Server URLError on config retrieval"
         return "Config Retrieval Error", 500
 
     if request.headers.get('X-Github-Event') == 'push':
-        rugby.up(commit_id, yml_file.read())
+        rugby.up(commit_id, config_file)
 
     return "Received something...", 200
 
