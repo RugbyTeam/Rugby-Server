@@ -4,11 +4,17 @@ from rugby import Parser
 import urllib
 import os
 
-rugby = Rugby()
+# Initializing necessary objects
 app = Flask(__name__)
+rugby = Rugby(os.getcwd())
 #this is the url that is used to download the rugby.yml file
 base_url = "https://raw.githubusercontent.com/"
 yml = "/master/.rugby.yml"
+
+"""
+Routing Methods
+
+"""
 @app.route('/payload', methods=['POST'])
 def github_payload():
     payload = request.get_json()
@@ -30,7 +36,14 @@ def github_payload():
         return "Received push"
     return "Received something..."
 
+@app.route('/')
+def status():
+    #TODO: Parse HTML status page here
+    html = "This is a status page..."
+    commit_id = "genericcommitID"
+    clone_url = "this/is/a/url"
+    rugby.up(commit_id, clone_url)
+    return html
+
 if __name__ == "__main__":
-    rugby.init("/Users/yuki/TEST")
-    rugby.up()
     app.run(debug=True)
