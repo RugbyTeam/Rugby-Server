@@ -12,14 +12,14 @@ class RepoError(Exception):
 class GithubRepo:
     def __init__(self, payload):
         """
-            _payload = dict payload from a web githook
-            commit_id = commit sha1 hash
-            clone_url = URL used for cloning this repo
-            cur_branch = current branch repo is on
-            default_branch = default repo branch
-            config_url = path to raw rugby config file on github
-            contrib_list = list of dict, each containing a contributor's login and email
-                [{'login':'username', 'email':'email@email.com'}]
+        _payload = dict payload from a web githook
+        commit_id = commit sha1 hash
+        clone_url = URL used for cloning this repo
+        cur_branch = current branch repo is on
+        default_branch = default repo branch
+        config_url = path to raw rugby config file on github
+        contrib_list = list of dict, each containing a contributor's login and email
+            [{'login':'username', 'email':'email@email.com'}]
         """
         self._payload = payload
         self.commit_id = payload['head_commit']['id']
