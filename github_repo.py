@@ -1,13 +1,11 @@
 # internal
 import config
 
-# stdlib
-import json
-import os
-import urllib2
+# external
+import requests
 
-class RepoError(Exception):
-    pass
+# stdlib
+import os
 
 class GithubRepo:
     def __init__(self, payload):
@@ -56,30 +54,21 @@ class GithubRepo:
             [{ "login" : "omoman", "email" : "email@gmail.com"}]
         """
         contrib_url = self._payload['repository']['contributors_url']
-        contrib_req = urllib2.Request(contrib_url)
         try:
-            contrib_data = urllib2.urlopen(contrib_req).read()
-        except ValueError:
-            raise RepoError("Failed to fetch contributor data")
+            contrib_data = requests.get(contrib_url).json() 
+        except Exception:
+            raise Exception("Failed to fetch contributor data")
 
-        # Convert contrib_data json string to dict
-        contrib_data = json.loads(contrib_data)
-        
         contrib_info = []
         for contrib in contrib_data:
             # Fetch contributors profile
             profile_url = contrib['url']
-            profile_req = urllib2.Request(profile_url)
             try:
-                profile_data = urllib2.urlopen(profile_req).read()
-            except ValueError:
-                raise RepoError("Failed to fetch user data")
+                profile_data = requests.get(profile_url).json()
+            except Exception:
+                raise Exception("Failed to fetch user data")
 
-            # Convert profile_data json string to dict
-            profile_data = json.loads(profile_data)
-            
             contrib_info.append({'login' : profile_data['login'], 'email' : profile_data['email']})
-        
+         
         return contrib_info
-
 
