@@ -47,7 +47,7 @@ class GitHubHookHandler(tornado.web.RequestHandler):
             return
 
         # Copy over rugby conf from repo
-        conf_dest_file = os.path.join(config.RUGBY_TMP, gh_repo.commit_id);
+        config_dest_file = os.path.join(config.RUGBY_TMP, gh_repo.commit_id);
         try:
             config_url = gh_repo.config_url
             config_data = yield http_client.fetch(config_url)
