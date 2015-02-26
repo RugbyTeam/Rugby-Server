@@ -1,5 +1,6 @@
 # internal
 from github_repo import GithubRepo
+from log_socket import TailLogSocketHandler
 import config
 
 # external
@@ -8,6 +9,7 @@ import tornado.web
 import tornado.escape
 import tornado.gen
 import tornado.httpclient
+import tornado.websocket
 
 # stdlib
 import os
@@ -66,17 +68,22 @@ class GitHubHookHandler(tornado.web.RequestHandler):
         self.write('Success')
 
 class StatusPageHandler(tornado.web.RequestHandler):
+    def get(self):
+        self.write("status") 
+
+class BuildPageHandler(tornado.web.RequestHandler):
     def get(self, commit_id):
-        self.write('This is a status page')
-        if commit_id != None:
-            self.write(commit_id)
+        items = ["Item 1", "Item 2", "Item 3"]
+        self.render("/home/matt/Rugby-Folders/Rugby-Server/template.html", title="My title", items=items, commit_id=commit_id)
 
 if __name__ == "__main__":
     github_hook_route = tornado.web.url(r'/payload', GitHubHookHandler)
     sha1_regex = r'/([0-9a-f]{5,40})?'
-    status_page_route = tornado.web.url(sha1_regex, StatusPageHandler)
+    status_page_route = tornado.web.url(r'/', StatusPageHandler)
+    web_socket_route = tornado.web.url(r'/websocket', TailLogSocketHandler)
+    build_page_route = tornado.web.url(r'/build' + sha1_regex, BuildPageHandler)
 
-    routes = [github_hook_route, status_page_route]
+    routes = [github_hook_route, status_page_route, web_socket_route, build_page_route]
 
     app = tornado.web.Application(routes)
     app.listen(8080)
