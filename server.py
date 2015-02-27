@@ -13,6 +13,24 @@ import tornado.websocket
 
 # stdlib
 import os
+class Commit:
+    def __init__(self, msg, cid, status):
+        self.commit_message = msg
+        self.commit_id = cid
+        self.display_status = status
+
+commit1 = Commit('Manny broke everything',
+                 '55555',
+                 'failed')
+commit2 = Commit('Fixed all of the project',
+                 '22222',
+                 'running')
+ 
+commit3 = Commit('Deleted all the tests',
+                 '33333',
+                 'passed')
+
+builds = [commit1, commit2, commit3]
 
 # Initializing necessary objects
 rugby = Rugby(config.RUGBY_ROOT)
@@ -67,14 +85,20 @@ class GitHubHookHandler(tornado.web.RequestHandler):
         # Start logging task
         self.write('Success')
 
+
+
 class StatusPageHandler(tornado.web.RequestHandler):
     def get(self):
-        self.write("status") 
+        self.render(os.getcwd() + '/static/index.html', title="Rugby", builds=builds)
 
 class BuildPageHandler(tornado.web.RequestHandler):
     def get(self, commit_id):
-        items = ["Item 1", "Item 2", "Item 3"]
-        self.render(os.path.join(os.getcwd(), 'template.html'), title="My title", items=items, commit_id=commit_id)
+        for commit in builds:
+            if commit.commit_id == commit_id:
+                self.render(os.getcwd() + '/static/build_page.html', title="Build", commit_id=commit_id, build=commit)
+                break
+        else:
+            self.write('Page Not Found')
 
 if __name__ == "__main__":
     github_hook_route = tornado.web.url(r'/payload', GitHubHookHandler)
@@ -85,6 +109,10 @@ if __name__ == "__main__":
 
     routes = [github_hook_route, status_page_route, web_socket_route, build_page_route]
 
-    app = tornado.web.Application(routes)
+    settings = {
+        "static_path":  os.getcwd() + '/static',
+    }
+
+    app = tornado.web.Application(routes, **settings)
     app.listen(8080)
     tornado.ioloop.IOLoop.current().start()
