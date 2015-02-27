@@ -1,0 +1,113 @@
+<!DOCTYPE HTML>
+<!--
+	Astral by HTML5 UP
+	html5up.net | @n33co
+	Free for personal and commercial use under the CCA 3.0 license (html5up.net/license)
+-->
+<html>
+	<head>
+        <title>{{ title }}</title>
+		<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+		<meta name="description" content="" />
+		<meta name="keywords" content="" />
+		<!--[if lte IE 8]><script src="css/ie/html5shiv.js"></script><![endif]-->
+		<script src="/static/js/jquery.min.js"></script>
+		<script src="/static/js/skel.min.js"></script>
+        <script src="/static/js/init.js"></script>
+        <script src="/static/js/jquery-linedtextarea.js"></script>
+        <script src='https://cdnjs.cloudflare.com/ajax/libs/ace/1.1.8/ace.js'></script>
+		<noscript>
+			<link rel="stylesheet" href="/static/css/skel.css" />
+			<link rel="stylesheet" href="/static/css/style.css" />
+			<link rel="stylesheet" href="/static/css/style-desktop.css" />
+			<link rel="stylesheet" href="/static/css/style-noscript.css" />
+            <link rel="stylesheet" href="/static/css/jquery-linedtextarea.css" />
+        </noscript>
+
+        <style>
+            .build-status {
+                position: relative;
+                width: 100%;
+                height: 100%;
+                color: #000;
+                padding-left: 10px;
+            }
+        </style>
+		<!--[if lte IE 8]><link rel="stylesheet" href="css/ie/v8.css" /><![endif]-->
+	</head>
+	<body>
+		<!-- Wrapper-->
+			<div id="wrapper">
+
+              <div id="dash_head">
+                  <h1><a href="/">Rugby</a></h1>
+              </div>
+                {% block build %}
+                    <div id="main">						
+                        <article id="work" class="panel">
+                            <header>
+                                <h3>{{ escape(build.commit_message) }}</h3>
+                                <p><a href="#">commit: {{ escape(build.commit_id) }}</a></p>
+                            </header>
+
+                            <div class="build-status {{ escape(build.display_status) }}"> :: {{ escape(build.display_status) }} </div>
+
+                            <section>
+                                <textarea id="log" wrap="off" readonly>
+                                </textarea>
+                                <div id="ace_log">
+                                </div>
+
+                            </section>
+                        </article>
+                    </div>
+                {% end %}
+				<!-- Footer -->
+					<div id="footer">
+						<ul class="copyright">
+							<li>&copy; Untitled.</li><li>Design: <a href="http://html5up.net">HTML5 UP</a></li>
+						</ul>
+					</div>
+		
+			</div>
+
+            <script type="text/javascript">
+            var editor = ace.edit('ace_log');
+            editor.setTheme('ace/theme/monokai');
+            editor.setOptions({
+                readOnly: true,
+                highlightActiveLine: false,
+                highlightGutterLine: false
+            })
+            editor.renderer.$cursorLayer.element.style.opacity=0;
+            editor.textInput.getElement().disabled=true;
+            
+            var ws = new WebSocket("ws://localhost:8080/websocket");
+            var curr_log_size = 0;
+            ws.onopen = function() {
+                updateLog();
+            };
+
+            ws.onmessage = function(evt) {
+                var data = JSON.parse(evt.data);
+                curr_log_size = data.size;
+                //str = data.data.replace(/\n/g, '<br />');
+                str = data.data;
+                editor.insert(data.data);
+                log = $('#log')
+                log.val(editor.getValue());
+                //log.scrollTop(log[0].scrollHeight - log.height());
+            };
+
+            function updateLog() {
+                var msg = {
+                    type: 'update',
+                    commit_id: '{{ commit_id }}',
+                    size: curr_log_size
+                }
+                ws.send(JSON.stringify(msg));
+                setTimeout(updateLog, 1000);
+            }
+            </script>
+	</body>
+</html>

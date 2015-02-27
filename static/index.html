@@ -1,0 +1,60 @@
+<!DOCTYPE HTML>
+<!--
+	Astral by HTML5 UP
+	html5up.net | @n33co
+	Free for personal and commercial use under the CCA 3.0 license (html5up.net/license)
+-->
+<html>
+	<head>
+        <title>{{ title }}</title>
+		<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+		<meta name="description" content="" />
+		<meta name="keywords" content="" />
+		<!--[if lte IE 8]><script src="css/ie/html5shiv.js"></script><![endif]-->
+		<script src="/static/js/jquery.min.js"></script>
+		<script src="/static/js/skel.min.js"></script>
+        <script src="/static/js/init.js"></script>
+        <script src="/static/js/jquery-linedtextarea.js"></script>
+		<noscript>
+			<link rel="stylesheet" href="/static/css/skel.css" />
+			<link rel="stylesheet" href="/static/css/style.css" />
+			<link rel="stylesheet" href="/static/css/style-desktop.css" />
+            <link rel="stylesheet" href="/static/css/style-noscript.css" />
+            <link rel="stylesheet" href="/static/css/jquery-linedtextarea.css" />
+		</noscript>
+		<!--[if lte IE 8]><link rel="stylesheet" href="css/ie/v8.css" /><![endif]-->
+	</head>
+	<body>
+		<!-- Wrapper-->
+			<div id="wrapper">
+
+              <div id="dash_head">
+                  <h1><a href="/">Rugby</a></h1>
+              </div>
+                            <!-- Main -->
+              {% for build in builds %}
+                {% block build %}
+                    <div id="main">						
+                        <!-- Me -->
+                            <article id="me" class="panel">
+                                <header>
+                                    <h3>{{ escape(build.commit_message) }}</h3>
+                                    <p><a href="#">commit: {{ escape(build.commit_id) }}</a></p>
+                                </header>
+                                <a href="build/{{ build.commit_id }}" class="jumplink pic">
+                                    <span class="arrow icon fa-chevron-right"><span>See my work</span></span>
+                                    <div class="status {{ escape(build.display_status) }}"></div>
+                                </a>
+                            </article>
+                    </div>
+                {% end %}
+              {% end %}
+				<!-- Footer -->
+					<div id="footer">
+						<ul class="copyright">
+							<li>&copy; Untitled.</li><li>Design: <a href="http://html5up.net">HTML5 UP</a></li>
+						</ul>
+					</div>
+			</div>
+	</body>
+</html>
