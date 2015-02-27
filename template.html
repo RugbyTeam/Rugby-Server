@@ -3,22 +3,36 @@
     <title>{{ title }}</title>
   </head>
   <body>
-    <h1>
-      Current Message: <span id="message"></span>
-    </h1>
+      <h1> Current Message: </h1>
+      <p id='message'></p>
     <ul>
       {% for item in items %}
         <li>{{ escape(item) }}</li>
       {% end %}
     </ul>
     <script type="text/javascript" src="//code.jquery.com/jquery-1.11.2.min.js"></script>
-     <script type="text/javascript">  
-      var ws = new WebSocket("ws://localhost:8080/websocket");
-      ws.onopen = function() {
-        ws.send("retrieve_logs:{{ commit_id }}");
-      };
-      ws.onmessage = function(evt) {
-        $('#message').text(evt.data);
-      };
+    <script type="text/javascript">
+        var ws = new WebSocket("ws://localhost:8080/websocket");
+        var curr_log_size = 0;
+        ws.onopen = function() {
+            updateLog();
+        };
+      
+        ws.onmessage = function(evt) {
+            var data = JSON.parse(evt.data);
+            curr_log_size = data.size;
+            str = data.data.replace(/(?:\r\n|\r|\n)/g, '<br />');
+            $('#message').append(str);
+        };
+
+        function updateLog() {
+            var msg = {
+                type: 'update',
+                commit_id: '{{ commit_id }}',
+                size: curr_log_size
+            }
+            ws.send(JSON.stringify(msg));
+            setTimeout(updateLog, 1000);
+        }
     </script> </body>
 </html>

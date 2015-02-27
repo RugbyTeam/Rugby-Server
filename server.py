@@ -74,7 +74,7 @@ class StatusPageHandler(tornado.web.RequestHandler):
 class BuildPageHandler(tornado.web.RequestHandler):
     def get(self, commit_id):
         items = ["Item 1", "Item 2", "Item 3"]
-        self.render("/home/matt/Rugby-Folders/Rugby-Server/template.html", title="My title", items=items, commit_id=commit_id)
+        self.render(os.path.join(os.getcwd(), 'template.html'), title="My title", items=items, commit_id=commit_id)
 
 if __name__ == "__main__":
     github_hook_route = tornado.web.url(r'/payload', GitHubHookHandler)

@@ -1,21 +1,22 @@
 from rugby import config
-import os
+
 import tornado.websocket
+import json
+import os
 
 class TailLogSocketHandler(tornado.websocket.WebSocketHandler):
     def open(self):
-        print "WebSocket opened"
+        pass
     
     def on_message(self, message):
-        build_msg = message.split(':')
-        event = build_msg[0]
-        commit_id = build_msg[1] 
-        if event == "retrieve_logs":
-            log_path = os.path.join(config.LOG_DIR, commit_id)
-            self.write_message('Here is the log from ' + log_path)
-            with open(log_path) as f:
-                logs = f.read()
-                self.write_message(logs)
-    
+        data = json.loads(message)
+        log_path = os.path.join(config.LOG_DIR, data['commit_id'])
+        with open(log_path, 'r') as f:
+            f.seek(data['size'])
+            msg = {}
+            msg['data'] = f.read()
+            msg['size'] = f.tell()
+            self.write_message(json.dumps(msg))
+
     def on_close(self):
-        print "WebSocket closed"
+        pass
