@@ -13,27 +13,26 @@ import tornado.websocket
 
 # stdlib
 import os
+
+# Dumb class (to avoid some code rewrites...)
+# Should probably move this representation to Rugby side... but it's fine since it's server only
 class Commit:
-    def __init__(self, msg, cid, status):
-        self.commit_message = msg
-        self.commit_id = cid
-        self.display_status = status
-
-commit1 = Commit('Manny broke everything',
-                 '55555',
-                 'failed')
-commit2 = Commit('Fixed all of the project',
-                 '22222',
-                 'running')
- 
-commit3 = Commit('Deleted all the tests',
-                 '33333',
-                 'passed')
-
-builds = [commit1, commit2, commit3]
+    def __init__(self, commit_obj):
+        self.commit_message = commit_obj['commit_message']
+        self.commit_id = commit_obj['commit_id']
+        state = commit_obj['state']
+        if state == 'RugbyState.SUCCESS':
+            self.display_status = 'passed'
+        elif state == 'RugbyState.ERROR':
+            self.display_status = 'failed'
+        else:
+            self.display_status = 'running'
 
 # Initializing necessary objects
 rugby = Rugby(config.RUGBY_ROOT)
+
+def print_callback(commit_id, state):
+    print "ID: {} \nState: {}\n".format(commit_id, state)
 
 class GitHubHookHandler(tornado.web.RequestHandler):
     def prepare(self):
@@ -80,20 +79,22 @@ class GitHubHookHandler(tornado.web.RequestHandler):
             f.write(config_data.body)
 
         # Run Rugby
-        Rugby.up(gh_repo.commit_id, config_dest_file)
+        rugby.start_runner(gh_repo.commit_id, gh_repo.commit_message,
+                           gh_repo.clone_url, config_dest_file, print_callback)
 
         # Start logging task
         self.write('Success')
 
-
-
 class StatusPageHandler(tornado.web.RequestHandler):
     def get(self):
+        builds = [Commit(x) for x in rugby.get_builds()]
         self.render(os.getcwd() + '/static/index.html', title="Rugby", builds=builds)
 
 class BuildPageHandler(tornado.web.RequestHandler):
     def get(self, commit_id):
-        for commit in builds:
+        builds = rugby.get_builds()
+        for build in builds:
+            commit = Commit(build)
             if commit.commit_id == commit_id:
                 self.render(os.getcwd() + '/static/build_page.html', title="Build", commit_id=commit_id, build=commit)
                 break
@@ -109,6 +110,7 @@ if __name__ == "__main__":
 
     routes = [github_hook_route, status_page_route, web_socket_route, build_page_route]
 
+    # Routing settings for static files
     settings = {
         "static_path":  os.getcwd() + '/static',
     }

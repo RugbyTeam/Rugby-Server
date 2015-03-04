@@ -21,6 +21,7 @@ class GithubRepo:
         """
         self._payload = payload
         self.commit_id = payload['head_commit']['id']
+        self.commit_message = payload['head_commit']['message']
         self.clone_url = payload['repository']['clone_url']
         self.cur_branch = payload['ref'].split('/')[-1]
         self.default_branch = payload['repository']['default_branch']
