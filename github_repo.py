@@ -68,7 +68,7 @@ class GithubRepo:
                 profile_data = requests.get(profile_url).json()
             except Exception:
                 raise Exception("Failed to fetch user data")
-            if("email" in contrib):
+            if "email" in contrib:
                 contrib_info.append({'login' : profile_data['login'], 'email' : profile_data['email']})
          
         return contrib_info
