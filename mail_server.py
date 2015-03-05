@@ -53,14 +53,14 @@ class MailServer():
     def _send(self, recipients, subject, body):
         """
         """
-        if isinstance(recipients, list):
-            to = ", ".join(recipients)
+        if isinstance(recipients, type(list)):
+          to = ", ".join(recipients)
         else:
             to = recipients
 
         msg = MIMEMultipart()
         msg['From'] = self.sender
-        msg['To'] = to
+        msg['To'] = ", ".join(recipients)
         msg['Subject'] = subject
 
         msg.attach(MIMEText(body, 'plain'))
@@ -73,5 +73,3 @@ class MailServer():
         mail_server = smtplib.SMTP_SSL(self.host, self.port)
         mail_server.login(self.sender, self.sender_passwd)
         return mail_server
-
-
