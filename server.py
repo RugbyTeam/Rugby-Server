@@ -5,6 +5,7 @@ import config
 
 # external
 from rugby import Rugby
+from mail_server import MailServer
 import tornado.web
 import tornado.escape
 import tornado.gen
@@ -79,8 +80,8 @@ class GitHubHookHandler(tornado.web.RequestHandler):
             f.write(config_data.body)
 
         # Run Rugby
-        rugby.start_runner(gh_repo.commit_id, gh_repo.commit_message,
-                           gh_repo.clone_url, config_dest_file, print_callback)
+        rugby.start_runner(gh_repo.get_build_info(), gh_repo.clone_url, 
+                           config_dest_file, print_callback)
 
         # Start logging task
         self.write('Success')
@@ -116,5 +117,5 @@ if __name__ == "__main__":
     }
 
     app = tornado.web.Application(routes, **settings)
-    app.listen(8080)
+    app.listen(5000)
     tornado.ioloop.IOLoop.current().start()
