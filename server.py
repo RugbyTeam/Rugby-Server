@@ -80,7 +80,7 @@ class GitHubHookHandler(tornado.web.RequestHandler):
 
         # Run Rugby
         rugby.start_runner(gh_repo.commit_id, gh_repo.commit_message,
-                           gh_repo.clone_url, config_dest_file, print_callback)
+                           gh_repo.clone_url, gh_repo.raw_url, config_dest_file, print_callback)
 
         # Start logging task
         self.write('Success')

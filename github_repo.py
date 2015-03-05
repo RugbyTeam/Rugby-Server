@@ -27,7 +27,8 @@ class GithubRepo:
         self.default_branch = payload['repository']['default_branch']
         self.config_url = self._build_config_url()
         self.contrib_list = self._fetch_all_contributors()
-
+        self.raw_url = self._build_raw_url()
+        
     def cur_branch_is_default(self):
         """
         Returns true if the current branch is also
@@ -35,15 +36,23 @@ class GithubRepo:
         """
         return self.cur_branch == self.default_branch
 
+
+    def _build_raw_url(self):
+        """
+        Helper function to build the raw url of the github repo
+        """
+        raw_base = config.RAW_GIT_URL_BASE
+        repo_name = self._payload['repository']['full_name']
+        raw_git_url =  os.path.join(raw_base, repo_name, self.default_branch)
+        return raw_git_url
+
     def _build_config_url(self):
         """
         Helper function to build the raw url to a rugby
         conf
         """
-        raw_base = config.RAW_GIT_URL_BASE
         conf_name = config.RUGBY_CONF
-        repo_name = self._payload['repository']['full_name']
-        raw_git_url =  os.path.join(raw_base, repo_name, self.default_branch, conf_name)
+        raw_git_url =  os.path.join(self._build_raw_url(), conf_name)
         return raw_git_url
 
     def _fetch_all_contributors(self):
