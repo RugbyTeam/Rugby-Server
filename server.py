@@ -11,6 +11,7 @@ import tornado.escape
 import tornado.gen
 import tornado.httpclient
 import tornado.websocket
+import jinja2
 
 # stdlib
 import os
@@ -39,21 +40,24 @@ rugby = Rugby(config.RUGBY_ROOT)
 def print_callback(commit_id, state):
     print "ID: {} \nState: {}\n".format(commit_id, state)
 
-def render_email(self, commit_info):
+def render_email(commit_info):
+    """ 
+    Renders the body of an email in HTML using jinja2 templating.
+    """
     with open(email_template_file) as template_file:
         j2_template = jinja2.Template(template_file.read())
-        return j2_template.render(author=commit_info['author_login'], commit_id=commit_info['commit_id'])
+        return j2_template.render(commit_id=commit_info['commit_id'],
+                                  commit_url=commit_info['commit_url'],
+                                  author_login=commit_info['author_login'], 
+                                  author_avatar_url=commit_info['author_avatar_url'])
+
 
 def email_callback(commit_id, state):
-    #need recipients list
-    #need template for title and body
+    # Commit_info contains all information from the given commit_id 
     commit_info = rugby.get_info(commit_id)
-    commit_id = commit_info['commit_id']
-    recipients = ['dcast030@ucr.edu']#commit_info['contributors_email']
-    author_login = commit_info['author_login']
-    author_avatar_url = commit_info['author_avatar_url']
+    recipients = commit_info['contributors_email']
 
-    subject = "%s broke the build" % commit_id
+    subject = "The build broke!"
     if state == 'RugbyState.ERROR':
         ms = MailServer()
         body = render_email(commit_info)
@@ -105,7 +109,7 @@ class GitHubHookHandler(tornado.web.RequestHandler):
 
         # Run Rugby
         rugby.start_runner(gh_repo.get_build_info(), gh_repo.clone_url, 
-                           config_dest_file, print_callback)
+                           config_dest_file, print_callback, email_callback)
 
         # Start logging task
         self.write('Success')

@@ -18,14 +18,11 @@ class GithubRepo:
         default_branch = default repo branch
         config_url = path to raw rugby config file on github
         contrib_list = list of dict, each containing a contributor's login and email
-        commit_url
-        state
-        commit_timestamp
-        finish_timestamp
-        author_login
-        author_email
-        author_avatar_url
-        contributors_email
+        commit_url = URL to the commit that was made
+        commit_timestamp = time the commit was made
+        author_login = author's username 
+        author_email = author's public email
+        author_avatar_url = URL to the author's github avatar
             [{'login':'username', 'email':'email@email.com'}]
         """
         self._payload = payload
@@ -42,7 +39,7 @@ class GithubRepo:
         self.author_avatar_url = payload['sender']['avatar_url']
         
         emails = [contributor['email'] for contributor in self._fetch_all_contributors()]
-        self.contrib_list = ','.join(emails)
+        self.contrib_list = ', '.join(emails)
            
     def get_build_info(self):
         commit_obj = {

@@ -11,5 +11,6 @@ STATICS_DIR = '/static'
 GMAIL_USER = os.getenv('GMAIL_USER')
 GMAIL_PASSWD = os.getenv('GMAIL_PASSWD')
 
-TEMPLATES_DIR = '/templates'
+# Where the template files are located
+TEMPLATES_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), 'templates'))
 EMAIL_TEMPLATE_FILE = os.path.join(TEMPLATES_DIR, 'email_template.j2')
