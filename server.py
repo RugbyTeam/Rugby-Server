@@ -15,6 +15,9 @@ import tornado.websocket
 # stdlib
 import os
 
+#Where email template is located
+email_template_file = config.EMAIL_TEMPLATE_FILE
+
 # Dumb class (to avoid some code rewrites...)
 # Should probably move this representation to Rugby side... but it's fine since it's server only
 class Commit:
@@ -22,6 +25,7 @@ class Commit:
         self.commit_message = commit_obj['commit_message']
         self.commit_id = commit_obj['commit_id']
         state = commit_obj['state']
+
         if state == 'RugbyState.SUCCESS':
             self.display_status = 'passed'
         elif state == 'RugbyState.ERROR':
@@ -34,6 +38,26 @@ rugby = Rugby(config.RUGBY_ROOT)
 
 def print_callback(commit_id, state):
     print "ID: {} \nState: {}\n".format(commit_id, state)
+
+def render_email(self, commit_info):
+    with open(email_template_file) as template_file:
+        j2_template = jinja2.Template(template_file.read())
+        return j2_template.render(author=commit_info['author_login'], commit_id=commit_info['commit_id'])
+
+def email_callback(commit_id, state):
+    #need recipients list
+    #need template for title and body
+    commit_info = rugby.get_info(commit_id)
+    commit_id = commit_info['commit_id']
+    recipients = ['dcast030@ucr.edu']#commit_info['contributors_email']
+    author_login = commit_info['author_login']
+    author_avatar_url = commit_info['author_avatar_url']
+
+    subject = "%s broke the build" % commit_id
+    if state == 'RugbyState.ERROR':
+        ms = MailServer()
+        body = render_email(commit_info)
+        ms.send(recipients, subject, body)
 
 class GitHubHookHandler(tornado.web.RequestHandler):
     def prepare(self):
@@ -117,5 +141,5 @@ if __name__ == "__main__":
     }
 
     app = tornado.web.Application(routes, **settings)
-    app.listen(5000)
+    app.listen(8080)
     tornado.ioloop.IOLoop.current().start()

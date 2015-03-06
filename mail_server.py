@@ -63,7 +63,7 @@ class MailServer():
         msg['To'] = ", ".join(recipients)
         msg['Subject'] = subject
 
-        msg.attach(MIMEText(body, 'plain'))
+        msg.attach(MIMEText(body, 'html'))
 
         mail_server = self._setup_mail_server()
         mail_server.sendmail(self.sender, to, msg.as_string())
