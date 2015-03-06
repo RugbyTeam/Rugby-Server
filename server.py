@@ -56,12 +56,16 @@ def email_callback(commit_id, state):
     # Commit_info contains all information from the given commit_id 
     commit_info = rugby.get_info(commit_id)
     recipients = commit_info['contributors_email']
+    recipients = recipients.split(',')
 
     subject = "The build broke!"
     if state == 'RugbyState.ERROR':
-        ms = MailServer()
-        body = render_email(commit_info)
-        ms.send(recipients, subject, body)
+        for recipient in recipients:
+            ms = MailServer()
+            print recipient
+            body = render_email(commit_info)
+            ms.send(recipient, subject, body)
+
 
 class GitHubHookHandler(tornado.web.RequestHandler):
     def prepare(self):
