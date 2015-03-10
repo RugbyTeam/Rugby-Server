@@ -5,14 +5,19 @@ import config
 
 # external
 from rugby import Rugby
+from mail_server import MailServer
 import tornado.web
 import tornado.escape
 import tornado.gen
 import tornado.httpclient
 import tornado.websocket
+import jinja2
 
 # stdlib
 import os
+
+#Where email template is located
+email_template_file = config.EMAIL_TEMPLATE_FILE
 
 # Dumb class (to avoid some code rewrites...)
 # Should probably move this representation to Rugby side... but it's fine since it's server only
@@ -21,6 +26,7 @@ class Commit:
         self.commit_message = commit_obj['commit_message']
         self.commit_id = commit_obj['commit_id']
         state = commit_obj['state']
+
         if state == 'RugbyState.SUCCESS':
             self.display_status = 'passed'
         elif state == 'RugbyState.ERROR':
@@ -33,6 +39,29 @@ rugby = Rugby(config.RUGBY_ROOT)
 
 def print_callback(commit_id, state):
     print "ID: {} \nState: {}\n".format(commit_id, state)
+
+def render_email(commit_info):
+    """ 
+    Renders the body of an email in HTML using jinja2 templating.
+    """
+    with open(email_template_file) as template_file:
+        j2_template = jinja2.Template(template_file.read())
+        return j2_template.render(commit_id=commit_info['commit_id'],
+                                  commit_url=commit_info['commit_url'],
+                                  author_login=commit_info['author_login'], 
+                                  author_avatar_url=commit_info['author_avatar_url'])
+
+
+def email_callback(commit_id, state):
+    # Commit_info contains all information from the given commit_id 
+    commit_info = rugby.get_info(commit_id)
+    recipients = commit_info['contributors_email']
+
+    subject = "The build broke!"
+    if state == 'RugbyState.ERROR':
+        ms = MailServer()
+        body = render_email(commit_info)
+        ms.send(recipients, subject, body)
 
 class GitHubHookHandler(tornado.web.RequestHandler):
     def prepare(self):
@@ -79,8 +108,7 @@ class GitHubHookHandler(tornado.web.RequestHandler):
             f.write(config_data.body)
 
         # Run Rugby
-        rugby.start_runner(gh_repo.commit_id, gh_repo.commit_message,
-                           gh_repo.clone_url, gh_repo.raw_url, config_dest_file, print_callback)
+        rugby.start_runner(gh_repo.get_build_info(), config_dest_file, print_callback, email_callback)
 
         # Start logging task
         self.write('Success')
