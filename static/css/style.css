@@ -14,9 +14,13 @@
 
 	body
 	{
-		background-image:			url('images/overlay.png'),		url('images/bg.jpg');
+		/*background-image:			url('images/overlay.png'),		url('images/bg.jpg');
 		background-repeat:			repeat,							no-repeat;
-		background-size:			auto,							100% 100%;
+		background-size:			auto,							100% 100%;*/
+
+        background: #3B4346 url('http://html5up.net/uploads/demos/halcyonic/css/images/bg01.jpg');
+        border-bottom: solid 1px #272d30;
+        box-shadow: inset 0px -1px 0px 0px #51575a;
 	}
 
 		body.is-loading *
@@ -411,9 +415,26 @@
 
         #dash_head > h1 > a
         {
-            color: #363636;
+            color: #f1f1f1;
             text-decoration: none;
         }
+
+    .commit_msg_ext {
+        margin-bottom: 20px;
+        color: #000;
+    }
+
+    #commit-link, #time-label {
+    }
+
+    .build-status {
+        position: relative;
+        width: 100%;
+        height: 100%;
+        color: #000;
+        padding-left: 10px;
+        display: inline-block;
+    }
 
     textarea {
         word-wrap: normal !important;
@@ -422,19 +443,32 @@
         padding: 10px;
     }
 
+    #tail_button {
+        float: right;
+        background: none;
+        border: none;
+        box-shadow: none;
+    }
+
     #log
     {
-        background-color: #2a2a2a;
+        background-color: #272822;
         border: 1px solid #000;
-        color: #f1f1f1;
-        height: 300px;
+        border-radius: 0px;
+        color: #F8F8F2;
+        height: 500px;
         width: 100%;
 
         overflow: hidden;
 
-        font-family: consolas;
+        font-family: monospace;
         font-size: 0.7em;
         line-height: 1.4em;
+
+        word-wrap: normal !important;
+        overflow-x: scroll !important;
+        overflow-y: scroll !important;
+        padding: 10px;
         /* resize: none; */
     }
 	
