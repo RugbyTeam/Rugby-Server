@@ -60,7 +60,7 @@ class MailServer():
 
         msg = MIMEMultipart()
         msg['From'] = self.sender
-        msg['To'] = ", ".join(recipients)
+        msg['To'] = to
         msg['Subject'] = subject
 
         msg.attach(MIMEText(body, 'html'))
