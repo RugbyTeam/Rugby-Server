@@ -6,6 +6,9 @@ import config
 # external
 from rugby import Rugby
 from mail_server import MailServer
+from datetime import datetime
+from dateutil.tz import tzlocal
+import dateutil.parser
 import tornado.web
 import tornado.escape
 import tornado.gen
@@ -26,6 +29,20 @@ class Commit:
         self.commit_message = commit_obj['commit_message']
         self.commit_id = commit_obj['commit_id']
         state = commit_obj['state']
+        self.commit_url = commit_obj['commit_url']
+
+        commit_date = dateutil.parser.parse(commit_obj['commit_timestamp'])
+        td = datetime.now(tzlocal()) - commit_date
+        self.days, self.hours, self.minutes = td.days, td.seconds // 3600, td.seconds // 60 % 60
+        self.total_seconds = int(td.total_seconds())
+        
+        self.time_label = None
+        if self.days > 0:
+            self.time_label = '%d days ago' % self.days
+        elif self.hours > 0:
+            self.time_label = '$d hours ago' % self.hours
+        else:
+            self.time_label = '%d minutes ago' % self.minutes
 
         if state == 'RugbyState.SUCCESS':
             self.display_status = 'passed'
@@ -36,6 +53,9 @@ class Commit:
 
 # Initializing necessary objects
 rugby = Rugby(config.RUGBY_ROOT)
+
+# Set TailLogSocket reference
+TailLogSocketHandler.rugby = rugby
 
 def print_callback(commit_id, state):
     print "ID: {} \nState: {}\n".format(commit_id, state)
@@ -87,13 +107,15 @@ class GitHubHookHandler(tornado.web.RequestHandler):
         except Exception as e:
             self.write(str(e))
             self.finish()
+            raise
             return
+
         # We don't care about any other branch other than the 'default' branch
         if not gh_repo.cur_branch_is_default():
             message = 'Not a default branch.'
             self.send_error(417, message=message)
             return
-
+        print "Trying to fetch"
         # Copy over rugby conf from repo
         config_dest_file = os.path.join(config.RUGBY_TMP, gh_repo.commit_id);
         try:
@@ -116,6 +138,7 @@ class GitHubHookHandler(tornado.web.RequestHandler):
 class StatusPageHandler(tornado.web.RequestHandler):
     def get(self):
         builds = [Commit(x) for x in rugby.get_builds()]
+        builds = sorted(builds, key=lambda commit: commit.total_seconds)
         self.render(os.getcwd() + '/static/index.html', title="Rugby", builds=builds)
 
 class BuildPageHandler(tornado.web.RequestHandler):

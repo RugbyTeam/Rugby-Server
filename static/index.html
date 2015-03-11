@@ -39,10 +39,11 @@
                             <article id="me" class="panel">
                                 <header>
                                     <h3 class='commit_msg'>{{ escape(build.commit_message) }}</h3>
-                                    <p><a href="#">commit: {{ escape(build.commit_id) }}</a></p>
+                                    <p><a id='commit-link' href="{{ escape(build.commit_url) }}">commit: {{ escape(build.commit_id) }}</a></p>
+                                    <p>{{ escape(build.time_label) }}</p>
                                 </header>
                                 <a href="build/{{ build.commit_id }}" class="jumplink pic">
-                                    <span class="arrow icon fa-chevron-right"><span>See my work</span></span>
+                                    <span class="arrow icon fa-chevron-right"><span></span></span>
                                     <div class="status {{ escape(build.display_status) }}"></div>
                                 </a>
                             </article>
@@ -57,6 +58,10 @@
                     </div>
 
                 <script type='text/javascript'>
+                var ws = new WebSocket("ws://localhost:8080/websocket");
+
+
+
                 // Truncate all commit messages to shorter length...
                 function truncate(string){
                     var max_len = 50;

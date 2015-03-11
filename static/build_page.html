@@ -25,15 +25,17 @@
         </noscript>
 
         <style>
-            .build-status {
-                position: relative;
-                width: 100%;
-                height: 100%;
-                color: #000;
-                padding-left: 10px;
-            }
+
         </style>
-		<!--[if lte IE 8]><link rel="stylesheet" href="css/ie/v8.css" /><![endif]-->
+        <!--[if lte IE 8]><link rel="stylesheet" href="css/ie/v8.css" /><![endif]-->
+
+        <!-- Latest compiled and minified CSS -->
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.2/css/bootstrap.min.css">
+
+        <!-- Optional theme -->
+
+        <!-- Latest compiled and minified JavaScript -->
+        <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.2/js/bootstrap.min.js"></script>
 	</head>
 	<body>
 		<!-- Wrapper-->
@@ -47,17 +49,21 @@
                         <article id="work" class="panel">
                             <header>
                                 <h3 class='commit_msg'>{{ escape(build.commit_message) }}</h3>
-                                <p><a href="#">commit: {{ escape(build.commit_id) }}</a></p>
+                                <p class='commit_msg_ext'></p>
+                                <p><a id="commit-link" href="#">commit: {{ escape(build.commit_id) }}</a></p>
+                                <p id='time-label'></p>
                             </header>
-
-                            <div class="build-status {{ escape(build.display_status) }}"> :: {{ escape(build.display_status) }} </div>
+                            <div class="tail-header"> </div>
+                            <div id="display_status" class="build-status {{ escape(build.display_status) }}">
+                                <span> :: {{ escape(build.display_status) }} </span>
+                                <button type="button" id="tail_button" class="btn btn-default" onclick="toggleScrollTop()">
+                                    <span class="glyphicon glyphicon-chevron-up" aria-hidden="true"></span>
+                                </button>
+                            </div>
 
                             <section>
-                                <textarea id="log" wrap="off" readonly>
-                                </textarea>
-                                <div id="ace_log">
-                                </div>
-
+                                <pre id="log" wrap="off" readonly>
+                                </pre>
                             </section>
                         </article>
                     </div>
@@ -72,32 +78,53 @@
 			</div>
 
             <script type="text/javascript">
-            var editor = ace.edit('ace_log');
-            editor.setTheme('ace/theme/monokai');
-            editor.setOptions({
-                readOnly: true,
-                highlightActiveLine: false,
-                highlightGutterLine: false
-            })
-            editor.renderer.$cursorLayer.element.style.opacity=0;
-            editor.textInput.getElement().disabled=true;
-            
             var ws = new WebSocket("ws://localhost:8080/websocket");
             var curr_log_size = 0;
+            var curr_display_status = null;
+
+            // Scroll Flag for toggling
+            var scrollFlag = false;
+            toggleScrollTop();
+
             ws.onopen = function() {
                 updateLog();
+                updateScroll();
             };
 
             ws.onmessage = function(evt) {
                 var data = JSON.parse(evt.data);
+                if (curr_log_size < data.size) {
+                    html = data.data.replace(/\n/g, '<br />');
+                    log = $('#log')
+                    log.append(html);
+                }
                 curr_log_size = data.size;
-                //str = data.data.replace(/\n/g, '<br />');
-                str = data.data;
-                editor.insert(data.data);
-                log = $('#log')
-                log.val(editor.getValue());
-                //log.scrollTop(log[0].scrollHeight - log.height());
-            };
+
+                // Update display status
+                if (data.display_status != curr_display_status) {
+                    display_label = $('#display_status').find('span').first();
+                    $('#display_status').removeClass();
+                    $('#display_status').addClass('build-status ' + data.display_status);
+                    display_label.text(' :: ' + data.display_status);
+                    curr_display_status = data.display_status; 
+                }
+                console.log(data.display_status);
+
+                // Update build info (time etc.)
+                time_label = $('#time-label');
+                time = data.commit_time;
+                if (time.days > 0) {
+                    time_label.text(time.days + ' days ago');
+                } else if (time.hours > 0) {
+                    time_label.text(time.hours + ' hours ago');
+                } else {
+                    time_label.text('less than a minute ago');
+                }
+
+                // Update commit url
+                commit_link = $('#commit-link');
+                commit_link.attr('href', data.commit_url);
+            }
 
             function updateLog() {
                 var msg = {
@@ -107,6 +134,42 @@
                 }
                 ws.send(JSON.stringify(msg));
                 setTimeout(updateLog, 1000);
+            }
+
+            function updateScroll() {
+                log = $('#log');
+                if (scrollFlag) {
+                    log.scrollTop(log[0].scrollHeight - log.height());
+                } else {
+                    log.scrollTop();
+                }
+                setTimeout(updateScroll, 100);
+            }
+
+            function toggleScrollTop(){
+                scrollFlag = !scrollFlag;
+                tail_button = $('#tail_button');
+                glyph = tail_button.find("span");
+
+                if (scrollFlag) {
+                    glyph.removeClass();
+                    glyph.addClass("glyphicon glyphicon-pause");
+                } else {
+                    glyph.removeClass();
+                    glyph.addClass("glyphicon glyphicon-play");
+                }
+            }
+
+            format_commit_msg();
+            // **** Code for Front End Stuff 
+            function format_commit_msg() {
+                commit_msg = $('.commit_msg');
+                commit_ext = $('.commit_msg_ext');
+                msg = commit_msg.text().split('\n');
+                console.log(msg);
+                commit_msg.text(msg[0]);
+                msg.shift();
+                commit_ext.text(msg.join(''));
             }
             </script>
 	</body>
