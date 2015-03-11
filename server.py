@@ -40,7 +40,7 @@ class Commit:
         if self.days > 0:
             self.time_label = '%d days ago' % self.days
         elif self.hours > 0:
-            self.time_label = '$d hours ago' % self.hours
+            self.time_label = '%d hours ago' % self.hours
         else:
             self.time_label = '%d minutes ago' % self.minutes
 
